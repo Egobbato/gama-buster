@@ -1,30 +1,60 @@
-const generoController = {
-  index: (req, res) => {
-    res.json([]);
+const Genero = require("../models/Genero");
+
+const GeneroController = {
+  index: async (req, res) => {
+    const allGenero = await Genero.findAll();
+
+    res.json(allGenero);
   },
-  store: (req, res) => {
-    res.json(req.body);
+  store: async (req, res) => {
+    const { nome } = req.body;
+    const novoGenero = await Genero.create({ nome });
+    res.json(novoGenero);
   },
-  show: (req, res) => {
+
+  show: async (req, res) => {
     const { id } = req.params;
 
-    res.json({
-      id,
-      name: `Produto ${id}`,
-      price: 300,
-    });
-  },
-  update: (req, res) => {
-    const { id } = req.params;
+    const genero = await Genero.findByPk(id);
 
-    res.json({
-      id,
-      ...(req.body || {}),
+    if (genero) {
+      return res.json(genero);
+    }
+
+    res.status(404).json({
+      message: "Genero não encontrado",
     });
   },
-  destroy: (req, res) => {
+
+  update: async (req, res) => {
+    const { id } = req.params;
+    const { nome } = req.body;
+
+    const genero = await Genero.findByPk(id);
+
+    if (!genero) {
+      res.status(404).json({
+        message: "Genero não encontrado",
+      });
+    }
+
+    genero.nome = nome;
+    await genero.save();
+
+    res.json(genro);
+  },
+  destroy: async (req, res) => {
+    const { id } = req.params;
+    const genero = await Genero.findByPk(id);
+
+    if (!genero) {
+      res.status(404).json({
+        message: "Genero não encontrado",
+      });
+    }
+    await genero.destroy();
     res.status(204).send("");
   },
 };
 
-module.exports = generoController;
+module.exports = GeneroController;
