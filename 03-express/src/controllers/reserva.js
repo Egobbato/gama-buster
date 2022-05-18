@@ -1,28 +1,69 @@
+const Reserva = require("../models/Reserva");
+
 const reservaController = {
-  index: (req, res) => {
-    res.json([]);
+  index: async (req, res) => {
+    const allReserva = await Reseva.findAll();
+    res.json(allReserva);
   },
-  store: (req, res) => {
-    res.json(req.body);
-  },
-  show: (req, res) => {
-    const { id } = req.params;
 
-    res.json({
-      id,
-      name: `Produto ${id}`,
-      price: 300,
-    });
-  },
-  update: (req, res) => {
-    const { id } = req.params;
+  store: async (req, res) => {
+    const { data_reserva, data_limite_devolucao, total, cliente_codigo } =
+      req.body;
 
-    res.json({
-      id,
-      ...(req.body || {}),
+    const novaReserva = await Reserva.create({
+      data_reserva,
+      data_limite_devolucao,
+      total,
+      cliente_codigo,
     });
+
+    res.json(novaReserva);
   },
-  destroy: (req, res) => {
+
+  show: async (req, res) => {
+    const { id } = req.params;
+    const reserva = await Reserva.findByPk(id);
+
+    if (!reserva) {
+      res.status(404).json({
+        message: "Reserva não encontrado",
+      });
+    } else {
+      res.json(reserva);
+    }
+  },
+
+  update: async (req, res) => {
+    const { id } = req.params;
+    const { data_reserva, data_limite_devolucao, total, cliente_codigo } =
+      req.body;
+
+    const reserva = await Reserva.findByPk(id);
+
+    if (!reserva) {
+      res.status(404).json({
+        message: "Cliente não encontrado",
+      });
+    }
+    await Reserva.update(
+      { data_reserva, data_limite_devolucao, total, cliente_codigo },
+      { where: { codigo: id } }
+    );
+
+    const reservaAtualizada = await Reserva.findByPk(id);
+    res.json(reservaAtualizada);
+  },
+
+  destroy: async (req, res) => {
+    const { id } = req.params;
+    const reserva = await Reserva.findByPk(id);
+
+    if (!reserva) {
+      res.status(204).json({ message: "Reserva não encontrado" });
+    } else {
+      await reserva.destroy();
+    }
+
     res.status(204).send("");
   },
 };

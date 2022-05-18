@@ -1,29 +1,64 @@
+const Filme = require("../models/Filme");
+
 const filmeController = {
-  index: (req, res) => {
-    res.json([]);
+  index: async (req, res) => {
+    const allFilme = await Filme.findAll();
+
+    res.json(allFilme);
   },
-  store: (req, res) => {
-    res.json(req.body);
+  store: async (req, res) => {
+    const { nome, ano_lancamento, duracao, estoque } = req.body;
+    const novoFilme = await Filme.create({
+      nome,
+      ano_lancamento,
+      duracao,
+      estoque,
+    });
+    res.json(novoFilme);
   },
-  show: (req, res) => {
+  show: async (req, res) => {
+    const { id } = req.params;
+    const filme = await Filme.findByPk(id);
+
+    if (filme) {
+      return res.json(filme);
+    } else {
+      res.status(404).json({
+        message: "Filme não encontrado",
+      });
+    }
+  },
+  update: async (req, res) => {
+    const { id } = req.params;
+    const { nome, ano_lancamento, duracao, estoque } = req.body;
+
+    const filme = await Filme.findByPk(id);
+
+    if (!filme) {
+      res.status(404).json({
+        message: "Filme não encontrado",
+      });
+    }
+    await Filme.update(
+      { nome, ano_lancamento, duracao, estoque },
+      { where: { codigo: id } }
+    );
+    const filmeAtualizado = await Filme.findByPk(id);
+    res.json(filmeAtualizado);
+  },
+
+  destroy: async (req, res) => {
     const { id } = req.params;
 
-    res.json({
-      id,
-      name: `Produto ${id}`,
-      price: 300,
-    });
-  },
-  update: (req, res) => {
-    const { id } = req.params;
+    const filme = await Filme.findByPk(id);
 
-    res.json({
-      id,
-      ...(req.body || {}),
-    });
-  },
-  destroy: (req, res) => {
-    res.status(204).send("");
+    if (!filme) {
+      res.status(204).json({ message: "Filme não encontrado" });
+    } else {
+      await filme.destroy();
+    }
+
+    res.status(404).send("");
   },
 };
 
